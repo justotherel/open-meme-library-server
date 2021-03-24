@@ -1,5 +1,8 @@
-import Post from "../models/Post.js";
-import mongoose from "mongoose";
+import Post from '../models/Post.js'
+import User from '../models/User.js'
+import mongoose from 'mongoose'
+
+import {DEFAULT_PIC} from '../config/config.js'
 
 export const getPosts = async (req, res) => {
   try {
@@ -19,10 +22,15 @@ export const getPost = async (req, res) => {
       return res.status(404).send(`No post with id: ${id}`)
 
     const post = await Post.findById(id)
+    const username = post.username
+    const user = await User.findOne({username})
+
+    let profilePic = user.profilePic
+    if (!profilePic) profilePic = DEFAULT_PIC
     // temporary workaround as comments are stored from oldest to newest in the database
     post.comments.reverse()
     
-    res.status(200).json(post)
+    res.status(200).json({post, profilePic})
 
   } catch (error) {
     console.log(error)

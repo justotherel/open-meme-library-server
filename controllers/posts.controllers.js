@@ -1,52 +1,67 @@
-import Post from '../models/Post.js'
-import User from '../models/User.js'
-import mongoose from 'mongoose'
+import Post from "../models/Post.js";
+import User from "../models/User.js";
+import mongoose from "mongoose";
 
-import {DEFAULT_PIC} from '../config/config.js'
+import { DEFAULT_PIC } from "../config/config.js";
 
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find().sort({createdAt:-1})
-    res.status(200).json(posts)
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.status(200).json(posts);
   } catch (error) {
-    console.log(error)
-    res.status(404).json({ message: "No posts" })
+    console.log(error);
+    res.status(404).json({ message: "No posts" });
   }
 };
 
 export const getPost = async (req, res) => {
   try {
-    const id = req.headers.referer?.split('/')[4]
+    const id = req.headers.referer?.split("/")[4];
 
     if (!mongoose.Types.ObjectId.isValid(id))
-      return res.status(404).send(`No post with id: ${id}`)
+      return res.status(404).send(`No post with id: ${id}`);
 
-    const post = await Post.findById(id)
-    const username = post.username
-    const user = await User.findOne({username})
+    const post = await Post.findById(id);
+    const username = post.username;
+    const user = await User.findOne({ username });
 
-    let profilePic = user.profilePic
-    if (!profilePic) profilePic = DEFAULT_PIC
+    let profilePic = user.profilePic;
+    if (!profilePic) profilePic = DEFAULT_PIC;
+
+    const users = [
+      ...new Set(post.comments.map((comment) => comment.username)),
+    ];
+
+    // temporary solution to get user images for every comment
+    let profilePics = await Promise.all(
+      users.map(async (username) => {
+        const commentator = username;
+        const user = await User.findOne({ username });
+        let image = user.profilePic;
+        if (!image) image = DEFAULT_PIC;
+        return ({ commentator, image });
+      })
+    )
+
     // temporary workaround as comments are stored from oldest to newest in the database
-    post.comments.reverse()
-    
-    res.status(200).json({post, profilePic})
-
+    post.comments.reverse();
+    res.status(200).json({post, profilePic, profilePics})
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: 'Internal server error. Please try again later'})
+    console.log(error);
+    res
+      .status(500)
+      .json({ message: "Internal server error. Please try again later" });
   }
 };
 
 export const getPostsByTag = async (req, res) => {
   try {
-    const {tag} = req.params
-    const posts = await Post.find({tags: tag}).sort({createdAt:-1})
+    const { tag } = req.params;
+    const posts = await Post.find({ tags: tag }).sort({ createdAt: -1 });
     res.status(200).json(posts);
-
   } catch (error) {
-    console.log(error)
-    res.status(404).json({ message: `No posts with tag ${tag}` })
+    console.log(error);
+    res.status(404).json({ message: `No posts with tag ${tag}` });
   }
 };
 
@@ -62,7 +77,7 @@ export const createPost = async (req, res) => {
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
-    res.status(409).json({ message: error })
+    res.status(409).json({ message: error });
   }
 };
 
@@ -71,18 +86,18 @@ export const likePost = async (req, res) => {
   const username = req.username;
 
   if (!req.userId) {
-    return res.json({ message: "Unauthenticated" })
+    return res.json({ message: "Unauthenticated" });
   }
 
   if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send(`No post with id: ${id}`)
+    return res.status(404).send(`No post with id: ${id}`);
 
   const post = await Post.findById(id);
 
   if (post.likes.find((like) => like.username === username)) {
     // Post already liked, unlike it
     post.likeCount = post.likeCount - 1;
-    post.likes = post.likes.filter((like) => like.username !== username)
+    post.likes = post.likes.filter((like) => like.username !== username);
   } else {
     // Not liked, like post
     post.likes.push({
@@ -92,34 +107,34 @@ export const likePost = async (req, res) => {
     post.likeCount = post.likeCount + 1;
   }
 
-  const updatedPost = await Post.findByIdAndUpdate(id, post, { new: true })
+  const updatedPost = await Post.findByIdAndUpdate(id, post, { new: true });
   res.status(200).json(updatedPost);
 };
 
 export const deletePost = async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send(`No post with id: ${id}`)
+    return res.status(404).send(`No post with id: ${id}`);
 
-  await Post.findByIdAndRemove(id)
+  await Post.findByIdAndRemove(id);
 
-  res.json({ message: "Post deleted successfully." })
+  res.json({ message: "Post deleted successfully." });
 };
 
 export const createComment = async (req, res) => {
   try {
-    const comment = req.body
+    const comment = req.body;
 
-    // Quite hacky solution. When deploying the url may change 
-    const id = req.headers.referer?.split('/')[4]
+    // Quite hacky solution. When deploying the url may change
+    const id = req.headers.referer?.split("/")[4];
 
     if (comment.body.trim === "") {
       return res.status(400).send("Empty comment body");
     }
 
     if (!mongoose.Types.ObjectId.isValid(id))
-      return res.status(404).send(`No post with id: ${id}`)
+      return res.status(404).send(`No post with id: ${id}`);
 
     const post = await Post.findById(id);
 
@@ -128,16 +143,14 @@ export const createComment = async (req, res) => {
       username: comment.username,
       createdAt: new Date().toISOString(),
     });
-    post.commentsCount = post.commentsCount + 1
+    post.commentsCount = post.commentsCount + 1;
 
     await post.save();
     res.status(201).json(post);
   } catch (error) {
-    res.status(409).json({ message: error })
+    res.status(409).json({ message: error });
     console.log(error);
   }
 };
 
-export const deleteComment = async (req, res) => {
-
-}
+export const deleteComment = async (req, res) => {};

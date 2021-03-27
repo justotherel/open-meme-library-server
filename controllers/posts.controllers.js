@@ -16,8 +16,8 @@ export const getPosts = async (req, res) => {
 
 export const getPost = async (req, res) => {
   try {
-    const id = req.headers.referer?.split("/")[4];
-
+    const {id} = req.params
+  
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(404).send(`No post with id: ${id}`);
 
@@ -127,7 +127,8 @@ export const createComment = async (req, res) => {
     const comment = req.body;
 
     // Quite hacky solution. When deploying the url may change
-    const id = req.headers.referer?.split("/")[4];
+    console.log(req.params)
+    const {id} = req.params
 
     if (comment.body.trim === "") {
       return res.status(400).send("Empty comment body");

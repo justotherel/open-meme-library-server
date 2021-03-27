@@ -11,14 +11,16 @@ export const signin = async (req, res) => {
   try {
     const existingUser = await User.findOne({username})
     if (!existingUser)
-      return res.status(404).json({ message: "User does not exist" });
+      return res.status(404).json({status: 'error', data: {}, message: '', error: "User does not exist" });
 
     const isPasswordCorrect = await bcrypt.compare(
       password, existingUser.password
     );
-    if (!isPasswordCorrect)
-      return res.status(400).json({ message: "Invalid credentials" });
 
+    if (!isPasswordCorrect)
+      return res.status(400).json({status: 'error', data: {}, message: '', error: "Invalid credentials" });
+
+      
     const token = jwt.sign(
       {
         username: existingUser.username,
@@ -32,13 +34,13 @@ export const signin = async (req, res) => {
     const id = existingUser._id
     const profilePic = existingUser.profilePic
 
-    res.status(200).json({username, id, profilePic, token});
+    res.status(200).json({status: 'ok', data: {username, id, profilePic, token}, message: 'logged in successfully', error: null });
 
   } catch (error) {
     console.log(error)
     res
       .status(500)
-      .json({ message: "Internal server error. Something went worng" });
+      .json({status: 'error', data: {}, message: '', error: 'Internal server error. Something went worng' })
   }
 };
 
@@ -52,15 +54,16 @@ export const signup = async (req, res) => {
     if (emailExists)
       return res
         .status(400)
-        .json({ message: "User with this email already exists" });
+        .json({status: 'error', data: {}, message: '', error: 'User with this email already exists' })
 
     if (usernameExists)
       return res
         .status(400)
-        .json({ message: "User with this username already exists" });
+        .json({status: 'error', data: {}, message: '', error: 'User with this username already exists' })
 
     if (password != confirmPassword) 
-        return res.status(400).json({ message: "Passwords don't not match" });
+        return res.status(400).json({status: 'error', data: {}, message: '', error: 'Passwords don\'t not match' })
+        
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const result = await User.create({
@@ -70,17 +73,19 @@ export const signup = async (req, res) => {
       profilePic: ""
     });
     const token = jwt.sign(
-      { username: result.username, email: result.email, id: result._id, profilePic: result.profilePic },
+      { username: result.username, id: result._id, profilePic: result.profilePic },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ result: result, token });
+    const id = result._id
+
+    res.status(200).json({status: 'ok', data: {username, id, profilePic, token}, message: 'User registered successfully', error: null })
 
   } catch (error) {
     
     res
       .status(500)
-      .json({ message: "Internal server error. Something went worng" });
+      .json({status: 'error', data: {}, message: '', error: 'Internal server error. Something went worng' })
   }
 };

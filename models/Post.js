@@ -7,33 +7,37 @@ const postSchema = mongoose.Schema({
     username: String,
     createdAt: {
         type: Date,
-        default: new Date()
+        default: new Date(),
     },
-    comments: [{
-        body: String,
-        username: String,
-        createdAt: {
-            type: Date,
-            default: new Date()
-        }
-    }],
-    likes: [{
-        username: String,
-        createdAt: String
-    }],
+    comments: [
+        {
+            body: String,
+            username: String,
+            createdAt: {
+                type: Date,
+                default: new Date(),
+            },
+        },
+    ],
+    likes: [
+        {
+            username: String,
+            createdAt: String,
+        },
+    ],
     likeCount: {
         type: Number,
-        default: 0
+        default: 0,
     },
     commentsCount: {
         type: Number,
-        default: 0
+        default: 0,
     },
 
-    user: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'users'
-    }
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+    },
 })
 
 const Post = mongoose.model('Post', postSchema)

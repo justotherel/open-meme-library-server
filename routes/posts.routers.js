@@ -18,6 +18,7 @@ const router = express.Router()
 
 //posts
 router.get('/', getPosts)
+router.get('/page/:page/:amount', getPosts)
 router.get('/:id', getPost)
 router.get('/tags/:tag', getPostsByTag)
 

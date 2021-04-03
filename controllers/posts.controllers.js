@@ -6,7 +6,17 @@ import { DEFAULT_PIC } from '../config/config.js'
 
 export const getPosts = async (req, res) => {
     try {
-        const posts = await Post.find().sort({ createdAt: -1 })
+        let { page, amount } = req.params
+        page = parseInt(page)
+        amount = parseInt(amount)
+
+        // const page = 1
+        // const amount = 50
+
+        const posts = await Post.find()
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * amount)
+            .limit(amount)
         const newPosts = []
         posts.map((post) => {
             const { comments, ...newPost } = post

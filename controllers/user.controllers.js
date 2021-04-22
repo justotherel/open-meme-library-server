@@ -2,8 +2,9 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 import User from '../models/User.js'
+import Profile from '../models/Profile.js'
 
-const JWT_SECRET = 'I love Taylor Swift'
+import { JWT_SECRET } from '../config/config.js'
 
 export const signin = async (req, res) => {
     const { username, password } = req.body
@@ -67,6 +68,7 @@ export const signup = async (req, res) => {
     try {
         const usernameExists = await User.findOne({ email })
         const emailExists = await User.findOne({ username })
+        console.log(emailExists)
 
         if (emailExists)
             return res.status(400).json({
@@ -98,6 +100,10 @@ export const signup = async (req, res) => {
             username,
             password: hashedPassword,
             profilePic: '',
+        })
+        const profile = await Profile.create({
+            username,
+            description: 'let them know',
         })
         const token = jwt.sign(
             {

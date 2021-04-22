@@ -6,24 +6,8 @@ import { DEFAULT_PIC } from '../config/config.js'
 
 export const getPosts = async (req, res) => {
     try {
-        let { page, amount } = req.params
-        page = parseInt(page)
-        amount = parseInt(amount)
-
-        // const page = 1
-        // const amount = 50
-
-        const posts = await Post.find()
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * amount)
-            .limit(amount)
-        const newPosts = []
-        posts.map((post) => {
-            const { comments, ...newPost } = post
-            newPosts.push(newPost)
-        })
-
-        res.status(200).json({ posts: newPosts })
+        const posts = await Post.find().sort({ createdAt: -1 })
+        res.status(200).json(posts)
     } catch (error) {
         console.log(error)
         res.status(404).json({ message: 'No posts' })

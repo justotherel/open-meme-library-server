@@ -4,6 +4,7 @@ import cors from 'cors'
 
 import postsRoutes from './routes/posts.routers.js'
 import userRoutes from './routes/users.routers.js'
+import profilesRoutes from './routes/profiles.routes.js'
 
 import { MONGO_URI, PORT } from './config/config.js'
 
@@ -17,6 +18,7 @@ app.options('*', cors())
 
 app.use('/posts', postsRoutes)
 app.use('/users', userRoutes)
+app.use('/profiles', profilesRoutes)
 
 mongoose
     .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

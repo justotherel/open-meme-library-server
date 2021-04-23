@@ -1,12 +1,13 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
+import dotenv from 'dotenv'
 
 import postsRoutes from './routes/posts.routers.js'
 import userRoutes from './routes/users.routers.js'
 import profilesRoutes from './routes/profiles.routes.js'
 
-import { MONGO_URI, PORT } from './config/config.js'
+dotenv.config()
 
 const app = express()
 
@@ -20,8 +21,10 @@ app.use('/posts', postsRoutes)
 app.use('/users', userRoutes)
 app.use('/profiles', profilesRoutes)
 
+const PORT = process.env.PORT || 5000
+
 mongoose
-    .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('🤡 MongoDB connection established 🤡')
         app.listen(PORT, () => {

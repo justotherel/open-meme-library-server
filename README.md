@@ -8,7 +8,7 @@ Started as a joke, this project then evolved into a university project with long
 
 ## About the repository
 
-This repository dedicated to the server-side of the app. Made with create-react-app.
+This repository dedicated to the server-side of the app.
 API is hosted on Heroku from this repo.
 
 ## All the work on the project is currently frozen
